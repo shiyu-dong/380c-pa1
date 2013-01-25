@@ -1,0 +1,6 @@
+ADDSP 3
+ADDSP -1
+ADDSP -1
+ADDSP -1
+// really should leave a value to return on the stack
+STOP

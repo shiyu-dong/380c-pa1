@@ -1,0 +1,198 @@
+CS380: Assignment 1
+Recursive descent parser and SaM code generator.
+
+Assigned: Tuesday, January 22nd, 2013
+Due:      Thursday, January 31st at 11:59pm
+
+
+== Background ==
+For the first assignment, you will implement a recursive-descent compiler by hand. The compiler must accept a very simple language (Bali) described below and generate instructions for a simple virtual machine (SaM) also described below. 
+
+== 1. Bali Compiler [100 points] ==
+
+Create a handwritten recursive-descent parser and SaM code generator for the Bali language, using the SaMTokenizer for a lexical analyzer. Your compiler should take a single Bali program file as input and produce a SaM program that implements the Bali program. 
+
+=== 1.1 Grammar ===
+
+The following is the grammar specification of the Bali language. In the specification, all lower-case symbols denote a literal value. Additionally, these literals are reserved words (keywords) and can not be used as identifiers for variables or methods. Non-alphanumeric characters surrounded by single 
+quotes denote the literal consisting of only the non-alphanumeric characters. Upper-case symbols are non-terminals. '*' means zero or more occurrences. '?' means one or zero occurrences. '[ ]' is the character class construction operator. Parentheses are used to group sequences of symbols together.
+
+A Bali program is a sequence of zero or more method declarations. The only type in this language is int. Each method declaration has a return type, zero or more formals, and a body. The body consists of zero or more variable declarations, and a sequence of statements. Variables can be initialized when they are declared. The method body consists of a sequence of statements, where each statement is an assignment statement, a conditional statement, a while loop, a return statement, a break 
+statement, a block, or a null statement. These statements have the usual meaning; a break statement must be lexically nested within one or more loops, and when it is executed, it terminates the execution of the innermost loop in which it is nested.  Expressions are fully parenthesized to avoid problems with associativity and precedence. 
+
+The literal 'true' is the value 1. The literal 'false' is the value 0. For the purposes of expressions used in conditions, any non-zero value is true and the value zero is false.
+
+Characters between and including '//' and the end of the line are interpreted as a comment and should be discarded. The SaMTokenizer class does this for you automatically.
+***************************************************************
+PROGRAM    -> METH_DECL*
+
+METH_DECL  -> TYPE ID '(' FORMALS? ')' BODY
+FORMALS    -> TYPE ID (',' TYPE ID)*
+TYPE       -> int
+
+BODY       -> '{' VAR_DECL*  STMT* '}'
+VAR_DECL   -> TYPE ID ('=' EXP)? (',' ID ('=' EXP)?)* ';'
+
+STMT       -> ASSIGN ';'
+          | return EXP ';'
+          | if '(' EXP ')' STMT else STMT
+          | while '(' EXP ')' STMT
+          | break ';'
+          | BLOCK
+          | ';'
+
+BLOCK      -> '{' STMT* '}'
+ASSIGN     -> LOCATION '=' EXP
+LOCATION   -> ID
+METHOD     -> ID
+
+EXP        -> LOCATION
+          | LITERAL
+          | METHOD '(' ACTUALS? ')'
+          | '('EXP '+' EXP')'
+          | '('EXP '-' EXP')'
+          | '('EXP '*' EXP')'
+          | '('EXP '/' EXP')'
+          | '('EXP '&' EXP')'
+          | '('EXP '|' EXP')'
+          | '('EXP '<' EXP')'
+          | '('EXP '>' EXP')'
+          | '('EXP '=' EXP')'
+          | '(''-' EXP')'
+          | '(''!' EXP')'
+          | '(' EXP ')'
+
+ACTUALS    -> EXP '('',' EXP')'*
+
+LITERAL    -> INT | true | false
+
+INT        -> '-'? [1-9] [0-9]*
+ID         -> [a-zA-Z] ( [a-zA-Z] | [0-9] | '_' )*
+
+***************************************************************
+Here are some additional points regarding the grammar and language.
+
+
+1. You do not need to worry about redeclaration of variables. Since all local variables are defined at the beginning of a method, you do not need to worry about scoping rules for variables. 
+
+2. There will be a main method in the input program. 
+
+3. There is no overloading of methods.
+
+4. You will need a symbol table for each method. One approach would be to have a separate class for the symbol table (using
+hash tables or any approach). A symbol table object  would be created inside your getMethod method, and be initialized by the getDeclarations method call. Once initialized it would be passed to all (almost) other method invocations inside the getMethod to make sure each rule has the appropriate information. Each method will have its own symbol table.
+
+If a program does not satisfy the grammar above or does not satisfy the textual description of the language, your compiler should print a short, informative error message and/or exit with a non-zero exit status.
+
+=== 1.3 Template ===
+You can use the template below to help you get started. 
+
+package assignment4;
+import edu.cornell.cs.sam.io.SamTokenizer;
+import edu.cornell.cs.sam.io.Tokenizer;
+import edu.cornell.cs.sam.io.Tokenizer.TokenType;
+
+public class BaliCompiler
+{
+	static String compiler(String fileName) 
+	{
+		//returns SaM code for program in file
+		try 
+		{
+			SamTokenizer f = new SamTokenizer (fileName);
+			String pgm = getProgram(f);
+			return pgm;
+		} 
+		catch (Exception e) 
+		{
+			System.out.println("Fatal error: could not compile program");
+			return "STOP\n";
+		}
+	}
+	static String getProgram(SamTokenizer f)
+	{
+		try
+		{
+			String pgm="";
+			while(f.peekAtKind()!=TokenType.EOF)
+			{
+				pgm+= getMethod(f);
+			}
+			return pgm;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Fatal error: could not compile program");
+			return "STOP\n";
+		}		
+	}
+	static String getMethod(SamTokenizer f)
+	{
+		//TODO: add code to convert a method declaration to SaM code.
+		//Since the only data type is an int, you can safely check for int 
+		//in the tokenizer.
+		//TODO: add appropriate exception handlers to generate useful error msgs.
+		f.check("int"); //must match at begining
+		String methodName = f.getString(); 
+		f.check ("("); // must be an opening parenthesis
+		String formals = getFormals(f);
+		f.check(")");  // must be an closing parenthesis
+		//You would need to read in formals if any
+		//And then have calls to getDeclarations and getStatements.
+		return null;
+	}
+	static String getExp(SamTokenizer f) 
+	{
+			//TODO implement this
+			  switch (f.peekAtKind()) {
+				 case INTEGER: //E -> integer
+					return "PUSHIMM " + f.getInt() + "\n";
+				 case OPERATOR:  
+				 {
+				 }
+				 default:   return "ERROR\n";
+			  }
+	}
+	static String getFormals(SamTokenizer f){
+			//TODO implement this.
+			return null;
+	}
+}
+
+=== 1.4 Logistics ===
+
+Make sure that your compiler is in the java class assignment1.BaliCompiler. 
+Your compiler should take two command-line arguments. The first argument is an input file 
+containing a Bali program. The second argument is an output file 
+that will contain your generated SaM code. 
+
+== 2. Turn-in Instructions ==
+
+Assignment submission will be done electronically using the turnin
+program.  First create the following directory structure in your current
+directory:
+
+  assignment1/
+  assignment1/README - Contains the students who worked on this assignment
+  assignment1/assignment1.jar - Compiled code for Problem 1
+  assignment1/src/.../*.java  - The source for all the code in assignment1.jar
+  
+Please verify that the assignment1 directory contains the required files
+(in particular a README file). You can submit your assignment by executing
+the following command:
+
+  turnin --submit olivo assignment1
+
+If you worked on this assignment with a partner, only one person needs to
+submit the assignment (but please remember to include your partner's name
+in the README file).
+
+=== 3 Grading ===
+
+80% of the grade will be obtained by satisfying test cases 
+(generating a correct SaM code or detecting an error in the source code). We are providing some tests in a-testcases.jar. 30% of the total assignment grade corresponds to passing these provided 
+tests, while the remaining 50% will entail handling correctly 
+some 'hidden' tests that we will disclose after grading.
+
+The remaining 20% will be assigned on the basis of good programming style 
+and informative error messages of your compiler.

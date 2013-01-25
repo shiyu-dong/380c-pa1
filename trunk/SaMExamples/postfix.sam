@@ -1,0 +1,8 @@
+// postfix.sam
+
+PUSHIMM 1
+PUSHIMM 2
+SUB
+PUSHIMM 3
+SUB
+STOP
