@@ -98,6 +98,7 @@ public class BaliCompiler
 
       // method name
       methodName = f.getWord();
+      System.out.println("Method Name: "+methodName);
 
       // open parenthesis
       if (!f.check ('(')) {
@@ -126,17 +127,25 @@ public class BaliCompiler
     return null;
   }
 
-  static String getFormals(SamTokenizer f, Hashtable<String, Integer> symt) {
-    //String ID;
-    while(f.peekAtKind() != TokenType.OPERATOR) {
-    //  if (!f.check("int")) {
-    //    throw new Exception("Expect 'int' in formal");
-    //  }
-    //  ID = f.getString();
-    //  symt.put(ID, symt.size());
-
-      // check if there is a next character
+  static String getFormals(SamTokenizer f, Hashtable<String, Integer> symt) throws Exception {
+    String ID;
+    String code="";
+    while(!f.test(')')) {
+      if (!f.check("int")) {
+        throw new Exception("Expect 'int' in formal");
+      }
+      ID = f.getWord();
+      symt.put(ID, symt.size());
+      System.out.print("ID: "+ ID+"\n");
+      if (f.test(')')) {
+        System.out.print("Done with Formal");
+        return ID; // need to fix..
+      }
+      if (!f.check(',')) {
+        throw new Exception("Expect 'int' in formal");
+      }
     }
+    System.out.print("Done with Formal");
 
     return null;
   }
@@ -150,14 +159,15 @@ public class BaliCompiler
   }
 
   static String getExp(SamTokenizer f, Hashtable<String, Integer> symt) {
-    switch (f.peekAtKind()) {
-      case INTEGER: //E -> integer
-        return "PUSHIMM " + f.getInt() + "\n";
-      case OPERATOR:  
-        {
-        }
-      default:   return "ERROR\n";
-    }
+//    switch (f.peekAtKind()) {
+//      case INTEGER: //E -> integer
+//        return "PUSHIMM " + f.getInt() + "\n";
+//      case OPERATOR:  
+//        {
+//        }
+//      default:   return "ERROR\n";
+//    }
+    return null;
   }
 
 }
