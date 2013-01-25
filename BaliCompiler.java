@@ -87,11 +87,37 @@ public class BaliCompiler
     //Since the only data type is an int, you can safely check for int
     //in the tokenizer.
     //TODO: add appropriate exception handlers to generate useful error msgs.
-    f.check("int"); //must match at begining
-    String methodName = f.getString(); 
-    f.check ("("); // must be an opening parenthesis
-    String formals = getFormals(f);
-    f.check(")");  // must be an closing parenthesis
+    String methodName= "";
+    String formals = "";
+    try {
+      // return type
+      if (!f.check("int")) {
+        throw new Exception("Cannot find return type of method");
+      }
+
+      // method name
+      methodName = f.getString(); 
+
+      // open parenthesis
+      if (!f.check ("(")) {
+        throw new Exception("Expect '(' in method decleartion");
+      }
+      // formals
+      formals = getFormals(f);
+      // open parenthesis
+      if (!f.check (")")) {
+        throw new Exception("Expect ')' in method decleartion");
+      }
+    }
+    catch(Exception e){
+      if (methodName.equals("")) {
+        System.out.println("Expecting method name");
+      }
+      else {
+        System.out.println("In method " + methodName +":");
+        System.out.println(e.getMessage());
+      }
+    }
     //You would need to read in formals if any
     //And then have calls to getDeclarations and getStatements.
     return null;
