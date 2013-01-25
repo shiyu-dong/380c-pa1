@@ -100,13 +100,13 @@ public class BaliCompiler
       methodName = f.getWord();
 
       // open parenthesis
-      if (!f.check ("(")) {
+      if (!f.check ('(')) {
         throw new Exception("Expect '(' in method decleartion");
       }
       // formals
       formals = getFormals(f, symt);
       // open parenthesis
-      if (!f.check (")")) {
+      if (!f.check (')')) {
         throw new Exception("Expect ')' in method decleartion");
       }
     }
