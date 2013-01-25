@@ -1,7 +1,7 @@
 run: compile
-	java BaliCompiler
+	java -cp '.:SaM-2.6.2.jar' BaliCompiler good.expr-1.bali good.expr.out
 compile: BaliCompiler.java Sam-2.6.2.jar
-	javac -cp Sam-2.6.2.jar BaliCompiler.java
+	javac -cp '.:SaM-2.6.2.jar' -Xlint BaliCompiler.java
 clean:
-	rm -rf *.class
+	rm -rf *.class *.out
 

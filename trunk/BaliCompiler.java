@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.*;
 import edu.cornell.cs.sam.io.SamTokenizer;
 import edu.cornell.cs.sam.io.Tokenizer;
 import edu.cornell.cs.sam.io.Tokenizer.TokenType;
@@ -41,8 +42,7 @@ public class BaliCompiler
     return;
   }
 
-  static String compiler(String fileName)
-  {
+  static String compiler(String fileName) {
     try
     {
       // Tokenize input file
@@ -57,16 +57,15 @@ public class BaliCompiler
     }
   }
 
-  static String getProgram(SamTokenizer f)
-  {
+  static String getProgram(SamTokenizer f) {
     try
     {
       // OS code for SaM
       String pgm="PUSHIMM 0\n" +
-                  "LINK\n" +
-                  "JSR main\n" +
-                  "POPFBR\n" +
-                  "STOP\n";
+        "LINK\n" +
+        "JSR main\n" +
+        "POPFBR\n" +
+        "STOP\n";
 
       while(f.peekAtKind()!=TokenType.EOF)
       {
@@ -81,14 +80,16 @@ public class BaliCompiler
     }
   }
 
-  static String getMethod(SamTokenizer f)
-  {
+  static String getMethod(SamTokenizer f) {
     //TODO: add code to convert a method declaration to SaM code.
     //Since the only data type is an int, you can safely check for int
     //in the tokenizer.
     //TODO: add appropriate exception handlers to generate useful error msgs.
     String methodName= "";
     String formals = "";
+    Hashtable<String, Integer>  symt = new Hashtable<String, Integer>();
+    symt.put("rv", symt.size());
+
     try {
       // return type
       if (!f.check("int")) {
@@ -96,14 +97,14 @@ public class BaliCompiler
       }
 
       // method name
-      methodName = f.getString(); 
+      methodName = f.getWord();
 
       // open parenthesis
       if (!f.check ("(")) {
         throw new Exception("Expect '(' in method decleartion");
       }
       // formals
-      formals = getFormals(f);
+      formals = getFormals(f, symt);
       // open parenthesis
       if (!f.check (")")) {
         throw new Exception("Expect ')' in method decleartion");
@@ -112,18 +113,43 @@ public class BaliCompiler
     catch(Exception e){
       if (methodName.equals("")) {
         System.out.println("Expecting method name");
+        System.exit(-1);
       }
       else {
         System.out.println("In method " + methodName +":");
         System.out.println(e.getMessage());
+        System.exit(-1);
       }
     }
     //You would need to read in formals if any
     //And then have calls to getDeclarations and getStatements.
     return null;
   }
-  static String getExp(SamTokenizer f)
-  {
+
+  static String getFormals(SamTokenizer f, Hashtable<String, Integer> symt) {
+    //String ID;
+    while(f.peekAtKind() != TokenType.OPERATOR) {
+    //  if (!f.check("int")) {
+    //    throw new Exception("Expect 'int' in formal");
+    //  }
+    //  ID = f.getString();
+    //  symt.put(ID, symt.size());
+
+      // check if there is a next character
+    }
+
+    return null;
+  }
+
+  static String getDeclarations(SamTokenizer f, Hashtable<String, Integer> symt) {
+    return null;
+  }
+
+  static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt) {
+    return null;
+  }
+
+  static String getExp(SamTokenizer f, Hashtable<String, Integer> symt) {
     switch (f.peekAtKind()) {
       case INTEGER: //E -> integer
         return "PUSHIMM " + f.getInt() + "\n";
@@ -133,7 +159,5 @@ public class BaliCompiler
       default:   return "ERROR\n";
     }
   }
-  static String getFormals(SamTokenizer f){
-    return null;
-  }
+
 }
