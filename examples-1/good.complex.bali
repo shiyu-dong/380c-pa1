@@ -1,0 +1,30 @@
+int method1(int a)
+{  
+   int b, c, d;
+   if ( (a < 0 )) 
+      return 0;
+   else
+     ;
+   d = a;
+   b = 0;
+   c = 1;
+   while ( ( a>0) )
+   {      
+      d = a;
+      while ( (d>0) )
+      {
+          c = (c * d);
+          b = (b + d);           
+          d = (d-1);
+       }
+     a = (a - 1);
+   }
+    
+   return (c+b);
+
+}
+
+int main()
+{
+    return (method1(5) + method1 (-5) );
+}

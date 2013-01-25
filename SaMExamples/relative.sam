@@ -1,0 +1,26 @@
+// relative addressing example
+
+ADDSP 1     // rv of program
+JSR add     // new frame (jump to "add")
+STOREOFF 0  // store rv of "add"
+STOP        // done
+
+add:        // code for "add" function
+LINK        // store old FBR (0) and set new FBR (2)
+ADDSP 3     // allocate space for x, y, rv of add
+            // rv of add is at relative address 1
+PUSHIMM 10  // push value 10
+STOREOFF 2  // store 10 in x's cell
+PUSHIMM 20  // push value 20
+STOREOFF 3  // store 20 in y's cell
+
+PUSHOFF 2   // retrieve x
+PUSHOFF 3   // retrieve y
+ADD         // x+y
+STOREOFF 1  // store x+y as rv of add
+ADDSP -2    // deallocate x, y
+
+SWAP        // exchange rv of add for old FBR
+UNLINK      // restore old FBR (0)
+SWAP        // exchange rv of add for return address
+RST         // return to Samcode just after "JSR add"

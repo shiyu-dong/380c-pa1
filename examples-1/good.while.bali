@@ -1,0 +1,16 @@
+int method1(int a)
+{
+    int b;
+    b = 0;
+    while ( ( a > 0 ) )
+    {
+        b = (b + 1);
+        a = (a - 1);
+    }
+    return b;
+}
+
+int main()
+{
+    return method1(5);
+}

@@ -1,0 +1,17 @@
+int method1(int a)
+{
+    int b;
+    if( (a>5) )
+        b = 15;
+    else if ( (a > 3) )
+        b = 10;
+    else
+        b=-15;
+    return b;
+
+}
+
+int main()
+{
+    return method1(5);
+}
