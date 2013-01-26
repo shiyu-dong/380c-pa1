@@ -166,34 +166,36 @@ public class BaliCompiler
     return null;
   }
 
-  static String getDeclarations(SamTokenizer f, Hashtable<String, Integer> symt) {
+  static String getDeclarations(SamTokenizer f, Hashtable<String, Integer> symt) throws Exception {
     String pgm = "";
-    String ID;
 
     while(f.test("int")) {
       f.check("int");
       pgm += getDeclaration(f, symt);
       if (!f.check(';')) {
         throw new Exception("Expect ';' at end of line");
+      }
     }
 
     return pgm;
   }
 
-  static String getDeclaration(SamToeknizer f, Hashtable<String, Integer> symt) {
+  static String getDeclaration(SamTokenizer f, Hashtable<String, Integer> symt) {
     String pgm = "";
+    String ID;
 
+    System.out.println("!!");
     ID = f.getString();
     symt.put(ID, symt.size());
     if (f.test('=')) {
       f.check('=');
       pgm += getExp(f, symt);
-      pgm += "PUSHOFF "+ symt.getValue(ID) + "\n";
+      pgm += "PUSHOFF "+ symt.get(ID) + "\n";
     }
 
-    if f.test(',') {
+    if (f.test(',')) {
       f.check(',');
-      pgm += getDeclaration(fm, symt);
+      pgm += getDeclaration(f, symt);
     };
 
     return pgm;
