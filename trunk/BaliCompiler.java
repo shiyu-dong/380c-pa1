@@ -69,7 +69,7 @@ public class BaliCompiler
 
       while(f.peekAtKind()!=TokenType.EOF)
       {
-        pgm+= getMethod(f);
+        pgm += getMethod(f);
       }
       return pgm;
     }
@@ -87,6 +87,7 @@ public class BaliCompiler
     //TODO: add appropriate exception handlers to generate useful error msgs.
     String methodName= "";
     String formals = "";
+    String pgm = "";
     Hashtable<String, Integer>  symt = new Hashtable<String, Integer>();
     symt.put("rv", symt.size());
 
@@ -98,6 +99,7 @@ public class BaliCompiler
 
       // method name
       methodName = f.getWord();
+      pgm += methodName + ":\n";
       System.out.println("Method Name: "+methodName);
 
       // open parenthesis
@@ -109,6 +111,20 @@ public class BaliCompiler
       // open parenthesis
       if (!f.check (')')) {
         throw new Exception("Expect ')' in method decleartion");
+      }
+      symt.put("FBR", symt.size());
+      symt.put("PC", symt.size());
+
+      if (!f.check ('{')) {
+        throw new Exception("Expect '{' in method decleartion");
+      }
+
+      pgm += getDeclarations(f, symt);
+
+      pgm += getStatements(f, symt);
+
+      if (!f.check ('}')) {
+        throw new Exception("Expect '}' in method decleartion");
       }
     }
     catch(Exception e){
@@ -151,8 +167,38 @@ public class BaliCompiler
   }
 
   static String getDeclarations(SamTokenizer f, Hashtable<String, Integer> symt) {
-    return null;
+    String pgm = "";
+    String ID;
+
+    while(f.test("int")) {
+      f.check("int");
+      pgm += getDeclaration(f, symt);
+      if (!f.check(';')) {
+        throw new Exception("Expect ';' at end of line");
+    }
+
+    return pgm;
   }
+
+  static String getDeclaration(SamToeknizer f, Hashtable<String, Integer> symt) {
+    String pgm = "";
+
+    ID = f.getString();
+    symt.put(ID, symt.size());
+    if (f.test('=')) {
+      f.check('=');
+      pgm += getExp(f, symt);
+      pgm += "PUSHOFF "+ symt.getValue(ID) + "\n";
+    }
+
+    if f.test(',') {
+      f.check(',');
+      pgm += getDeclaration(fm, symt);
+    };
+
+    return pgm;
+  }
+
 
   static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt) {
     return null;

@@ -3,5 +3,5 @@ run: compile
 compile: BaliCompiler.java Sam-2.6.2.jar
 	javac -cp '.:SaM-2.6.2.jar' -Xlint BaliCompiler.java
 clean:
-	rm -rf *.class *.out
+	rm -rf *.class *.out *.log
 
