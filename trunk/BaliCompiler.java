@@ -136,6 +136,7 @@ public class BaliCompiler
       if (!f.check ('}')) {
         throw new Exception("Expect '}' in method decleartion");
       }
+      return pgm;
     }
     catch(NullPointerException e) {
       System.out.println("Null Pointer");
@@ -152,8 +153,6 @@ public class BaliCompiler
         System.exit(-1);
       }
     }
-    //You would need to read in formals if any
-    //And then have calls to getDeclarations and getStatements.
     return null;
   }
 
@@ -203,6 +202,7 @@ public class BaliCompiler
     ID = f.getWord();
     System.out.println(ID);
     symt.put(ID, symt.size());
+
     if (f.test('=')) {
       f.check('=');
       pgm += getExp(f, symt);
@@ -238,17 +238,20 @@ public class BaliCompiler
       }
 
       System.out.println("before " + pgm);
+      System.out.println("getting word");
       tmp = f.getWord();
-      System.out.println("after " + pgm);
+      System.out.println("after " + tmp);
 
       // return
       if (tmp.equals("return")) {
         pgm += getExp(f, symt);
+        if (!f.check(';'))
+          throw new Exception("Expecting ';' at the end of the return statement");
         return pgm + "JUMP " + methodName + "End\n";
       }
 
       // if e then B1 else B2
-      if (tmp.equals("if")) {
+      else if (tmp.equals("if")) {
         int current_label_count = label_count;
         label_count++;
 
@@ -274,7 +277,7 @@ public class BaliCompiler
       }
 
       // while ( E ) B
-      if (tmp.equals("while")) {
+      else if (tmp.equals("while")) {
         int current_label_count = label_count;
         label_count++;
 
@@ -297,7 +300,7 @@ public class BaliCompiler
       }
 
       // break
-      if (tmp.equals("break")) {
+      else if (tmp.equals("break")) {
         if (!f.check(";")) {
           throw new Exception("Expecting ';' after break");
         }
@@ -305,6 +308,24 @@ public class BaliCompiler
           throw new Exception("'break' not used inside a loop");
         }
         pgm += "JUMP WhileLabel3_" + current_while_label + "\n";
+      }
+
+      // assign
+      else if (symt.containsKey(tmp)) {
+        if (f.getOp() != '=') {
+          throw new Exception("Expecting '=' after symbol" + tmp);
+        }
+        pgm += getExp(f, symt);
+        int offset = symt.get(tmp) - symt.get("FBR");
+        pgm += "STOREOFF " + offset + "\n";
+        System.out.println("\n" + pgm + "\n");
+        if (!f.check(';'))
+          throw new Exception("Expecting ';' at the end of the assign statement");
+      }
+
+      // undefined
+      else {
+        throw new Exception("Symbol " + tmp + " undefined");
       }
 
 
@@ -328,7 +349,7 @@ public class BaliCompiler
         if (tmp.equals("false")) { // E -> LITERAL -> false
           return "PUSHIMM 0\n";
         }
-        if (method_list.contains(tmp)) { // E -> METHOD ( ACTUALS )
+       if (method_list.containsKey(tmp)) { // E -> METHOD ( ACTUALS )
           String pgm = "PUSHIMM 0\n";
           if (!f.check('(')) {
             throw new Exception("expecting '(' in functions actuals");
@@ -343,13 +364,15 @@ public class BaliCompiler
                   "LINK\n" +
                   "JSR " + tmp + "\n" +
                   "POPFBR\n" +
-                  "ADDSP " + method_list.get(tmp) + "\n");
+                  "ADDSP -" + method_list.get(tmp) + "\n");
         }
-        if (symt.contains(tmp)) { // E -> LOCATION -> ID
+        if (symt.containsKey(tmp)) { // E -> LOCATION -> ID
           int offset = symt.get(tmp) - symt.get("FBR");
-          return "PUSHIMM " + offset;
+          return "PUSHOFF " + offset + "\n";
         }
-        break;
+        else {
+          throw new Exception("symbol not defined");
+        }
       }
 
       case OPERATOR:
@@ -386,6 +409,10 @@ public class BaliCompiler
         // E -> ( E ? E )
         op = f.getOp();
         pgm += getExp(f, symt);
+
+        if (!f.check(')')) {
+          throw new Exception("Expecting ')'");
+        }
 
         switch (op) {
           case '+':
