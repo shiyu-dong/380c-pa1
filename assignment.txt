@@ -62,7 +62,7 @@ EXP        -> LOCATION
           | '(''!' EXP')'
           | '(' EXP ')'
 
-ACTUALS    -> EXP '('',' EXP')'*
+ACTUALS    -> EXP (',' EXP)*
 
 LITERAL    -> INT | true | false
 
