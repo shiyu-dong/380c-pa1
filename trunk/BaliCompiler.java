@@ -8,6 +8,7 @@ public class BaliCompiler
 {
   static Hashtable<String, Integer> method_list;
   static int label_count;
+  static int local_count;
 
   public static void main(String[] args) {
     label_count = 0;
@@ -89,6 +90,8 @@ public class BaliCompiler
     String methodName= "";
     String pgm = "";
     int offset;
+    String tmp;
+    local_count = 0;
 
     Hashtable<String, Integer>  symt = new Hashtable<String, Integer>();
     symt.put("rv", symt.size());
@@ -123,7 +126,9 @@ public class BaliCompiler
         throw new Exception("Expect '{' in method decleartion");
       }
 
-      pgm += getDeclarations(f, symt);
+      tmp = getDeclarations(f, symt);
+      pgm += "ADDSP " + local_count + "\n";
+      pgm += tmp;
       System.out.println("getDeclar");
 
       pgm += getStatements(f, symt, methodName, -1);
@@ -131,7 +136,8 @@ public class BaliCompiler
       offset = symt.get("rv") - symt.get("FBR");
       pgm += methodName + "End:\n"
               + "STOREOFF " + offset + "\n"
-              + "JUMPIND";
+              + "ADDSP -" + local_count + "\n"
+              + "JUMPIND" + "\n";
 
       if (!f.check ('}')) {
         throw new Exception("Expect '}' in method decleartion");
@@ -197,16 +203,19 @@ public class BaliCompiler
     String pgm = "";
     String ID;
     Character c;
+    int offset;
 
     System.out.println(f.peekAtKind());
     ID = f.getWord();
+    local_count++;
     System.out.println(ID);
     symt.put(ID, symt.size());
 
     if (f.test('=')) {
       f.check('=');
+      offset = symt.get(ID) - symt.get("FBR");
       pgm += getExp(f, symt);
-      pgm += "PUSHOFF "+ symt.get(ID) + "\n";
+      pgm += "STOREOFF "+ offset + "\n";
     }
 
     if (f.test(',')) {
