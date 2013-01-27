@@ -11,6 +11,7 @@ public class BaliCompiler
 
   public static void main(String[] args) {
     label_count = 0;
+    method_list = new Hashtable<String, Integer>();
     if (args.length < 2) {
       // check input arguments
       System.out.println("Please specify input and output file names");
@@ -85,10 +86,6 @@ public class BaliCompiler
   }
 
   static String getMethod(SamTokenizer f) {
-    //TODO: add code to convert a method declaration to SaM code.
-    //Since the only data type is an int, you can safely check for int
-    //in the tokenizer.
-    //TODO: add appropriate exception handlers to generate useful error msgs.
     String methodName= "";
     String pgm = "";
     int offset;
@@ -111,9 +108,10 @@ public class BaliCompiler
         throw new Exception("Expect '(' in method decleartion");
       }
       // formals
-      int input_num = getFormals(f, symt);
+      Integer input_num = new Integer(1);
+      input_num = getFormals(f, symt);
+      System.out.println("methond name " + methodName + " " + input_num);
       method_list.put(methodName, input_num);
-      //System.out.println("Method Name: "+methodName);
       // open parenthesis
       if (!f.check (')')) {
         throw new Exception("Expect ')' in method decleartion");
@@ -126,6 +124,7 @@ public class BaliCompiler
       }
 
       pgm += getDeclarations(f, symt);
+      System.out.println("getDeclar");
 
       pgm += getStatements(f, symt, methodName, -1);
 
@@ -137,6 +136,10 @@ public class BaliCompiler
       if (!f.check ('}')) {
         throw new Exception("Expect '}' in method decleartion");
       }
+    }
+    catch(NullPointerException e) {
+      System.out.println("Null Pointer");
+      System.exit(-1);
     }
     catch(Exception e){
       if (methodName.equals("")) {
@@ -167,14 +170,12 @@ public class BaliCompiler
       count ++;
       //System.out.print("ID: "+ ID+"\n");
       if (f.test(')')) {
-        System.out.print("Done with Formal");
         return count;
       }
       if (!f.check(',')) {
         throw new Exception("Expect 'int' in formal");
       }
     }
-    System.out.print("Done with Formal");
 
     return 0;
   }
@@ -236,7 +237,9 @@ public class BaliCompiler
         }
       }
 
+      System.out.println("before " + pgm);
       tmp = f.getWord();
+      System.out.println("after " + pgm);
 
       // return
       if (tmp.equals("return")) {
