@@ -129,7 +129,6 @@ public class BaliCompiler
       tmp = getDeclarations(f, symt);
       pgm += "ADDSP " + local_count + "\n";
       pgm += tmp;
-      System.out.println("getDeclar");
 
       pgm += getStatements(f, symt, methodName, -1);
 
@@ -154,7 +153,7 @@ public class BaliCompiler
         System.exit(-1);
       }
       else {
-        System.out.println("In method " + methodName +":");
+        System.out.println("In method " + methodName +", line " + f.lineNo() +": ");
         System.out.println(e.getMessage());
         System.exit(-1);
       }
@@ -173,7 +172,6 @@ public class BaliCompiler
       ID = f.getWord();
       symt.put(ID, symt.size());
       count ++;
-      //System.out.print("ID: "+ ID+"\n");
       if (f.test(')')) {
         return count;
       }
@@ -205,10 +203,8 @@ public class BaliCompiler
     Character c;
     int offset;
 
-    System.out.println(f.peekAtKind());
     ID = f.getWord();
     local_count++;
-    System.out.println(ID);
     symt.put(ID, symt.size());
 
     if (f.test('=')) {
@@ -229,6 +225,7 @@ public class BaliCompiler
   static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt, String methodName, int current_while_label) throws Exception{
     String pgm = "";
     String tmp;
+    System.out.println("statement start");
 
     while (!f.test('}')) {
       // empty statement ';'
@@ -244,15 +241,14 @@ public class BaliCompiler
         if (!f.check('}')) {
           throw new Exception("Expect '}' at the end of the statement block");
         }
+        return pgm;
       }
 
-      System.out.println("before " + pgm);
-      System.out.println("getting word");
       tmp = f.getWord();
-      System.out.println("after " + tmp);
 
       // return
       if (tmp.equals("return")) {
+        System.out.println("return");
         pgm += getExp(f, symt);
         if (!f.check(';'))
           throw new Exception("Expecting ';' at the end of the return statement");
@@ -287,11 +283,9 @@ public class BaliCompiler
 
       // while ( E ) B
       else if (tmp.equals("while")) {
+        System.out.println("while start");
         int current_label_count = label_count;
         label_count++;
-
-        pgm += "JUMP " + "WhileLabel1_" + current_label_count + "\n";
-        pgm += "WhileLabel2_" + current_label_count + ":\n";
 
         if (!f.check('('))
           throw new Exception("Expect '(' after 'while'");
@@ -301,22 +295,44 @@ public class BaliCompiler
 
         String B = getStatements(f, symt, methodName, current_label_count);
 
-        pgm += B;
-        pgm += "WhileLabel1_" + current_label_count + ":\n";
+        pgm += "WL1_" + current_label_count + ":\n";
         pgm += E;
-        pgm += "JUMPC WhileLabel2_"+current_label_count + "\n";
-        pgm += "WhileLabel3_" + current_label_count + ":\n";
+        pgm += "ISNIL\n"
+               + "JUMPC WL2_" + current_label_count + "\n"
+               + B
+               + "JUMP WL1_" + current_label_count + "\n"
+               + "WL2_" + current_label_count + ":\n";
+
+        System.out.println("while end");
+//        pgm += "JUMP " + "WhileLabel1_" + current_label_count + "\n";
+//        pgm += "WhileLabel2_" + current_label_count + ":\n";
+//
+//        if (!f.check('('))
+//          throw new Exception("Expect '(' after 'while'");
+//        String E = getExp(f, symt); // code for while condition E
+//        if (!f.check(')'))
+//          throw new Exception("Expect ')' after 'while'");
+//
+//        String B = getStatements(f, symt, methodName, current_label_count);
+//
+//        pgm += B;
+//        pgm += "WhileLabel1_" + current_label_count + ":\n";
+//        pgm += E;
+//        pgm += "JUMPC WhileLabel2_"+current_label_count + "\n";
+//        pgm += "WhileLabel3_" + current_label_count + ":\n";
       }
 
       // break
       else if (tmp.equals("break")) {
-        if (!f.check(";")) {
+        if (!f.check(';')) {
           throw new Exception("Expecting ';' after break");
         }
         if (current_while_label == -1) {
           throw new Exception("'break' not used inside a loop");
         }
-        pgm += "JUMP WhileLabel3_" + current_while_label + "\n";
+        System.out.println("break");
+        pgm += "JUMP WL2_" + current_while_label + "\n";
+        //pgm += "JUMP WhileLabel3_" + current_while_label + "\n";
       }
 
       // assign
@@ -327,7 +343,6 @@ public class BaliCompiler
         pgm += getExp(f, symt);
         int offset = symt.get(tmp) - symt.get("FBR");
         pgm += "STOREOFF " + offset + "\n";
-        System.out.println("\n" + pgm + "\n");
         if (!f.check(';'))
           throw new Exception("Expecting ';' at the end of the assign statement");
       }
@@ -337,8 +352,8 @@ public class BaliCompiler
         throw new Exception("Symbol " + tmp + " undefined");
       }
 
-
     }
+    System.out.println("statement return");
     return pgm;
   }
 
@@ -365,6 +380,8 @@ public class BaliCompiler
           }
           while (!f.test(')')) {
             pgm += getExp(f, symt);
+            if (f.test(','))
+              f.check(',');
           }
           if (!f.check(')')) {
             throw new Exception("expecting ')' in functions actuals");
