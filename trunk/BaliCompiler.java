@@ -113,7 +113,6 @@ public class BaliCompiler
       // formals
       Integer input_num = new Integer(1);
       input_num = getFormals(f, symt);
-      System.out.println("methond name " + methodName + " " + input_num);
       method_list.put(methodName, input_num);
       // open parenthesis
       if (!f.check (')')) {
@@ -155,8 +154,7 @@ public class BaliCompiler
         System.exit(-1);
       }
       else {
-        System.out.println("In method " + methodName +", line " + f.lineNo() +": ");
-        System.out.println(e.getMessage());
+        System.out.println("In method " + methodName +", line " + f.lineNo() +": " + e.getMessage());
         System.exit(-1);
       }
     }
@@ -227,7 +225,6 @@ public class BaliCompiler
   static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt, String methodName, int current_while_label) throws Exception{
     String pgm = "";
     String tmp;
-    System.out.println("statement start");
 
     // empty statement ';'
     if (f.test(';')) {
@@ -250,7 +247,6 @@ public class BaliCompiler
 
     // return
     if (tmp.equals("return")) {
-      System.out.println("return");
       pgm += getExp(f, symt);
       if (!f.check(';'))
         throw new Exception("Expecting ';' at the end of the return statement");
@@ -269,9 +265,7 @@ public class BaliCompiler
         throw new Exception("Expect ')' after 'if'");
       pgm += "JUMPC " +"Taken" + current_label_count + "\n"; // branch taken
 
-      System.out.println("IIIIIIFFFFFFFF");
       String B1 = getStatements(f, symt, methodName, current_while_label);
-      System.out.println("IIIIIIFFFFFFFF");
 
       if (!f.check("else"))
         throw new Exception("Expect 'else after 'if'");
@@ -289,7 +283,6 @@ public class BaliCompiler
 
     // while ( E ) B
     else if (tmp.equals("while")) {
-      System.out.println("while start");
       int current_label_count = label_count;
       label_count++;
 
@@ -451,13 +444,13 @@ public class BaliCompiler
             return pgm + "GREATER\n";
           case '=':
             return pgm + "EQUAL\n";
+          default:
+        	throw new Exception("Unknown Operator '" + op + "'");
         }
-        break;
       }
 
       default:
         throw new Exception("Cannot recognize the expression");
     }
-    return null;
   }
 }
