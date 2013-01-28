@@ -99,12 +99,25 @@ public class BaliCompiler
     try {
       // return type
       if (!f.check("int")) {
-        throw new Exception("Cannot find return type of method");
+        throw new Exception("invalid return type for the method.");
       }
 
       // method name
       methodName = f.getWord();
-      pgm += methodName + ":\n";
+      if ((methodName.equals("int")) || (methodName.equals("if")) 
+      || (methodName.equals("else")) || (methodName.equals("while")) 
+      || (methodName.equals("break")))
+    	  throw new Exception ("method name is keyword.");
+      
+//      char c = methodName.charAt(0);
+//      if (!((c >= 'a' && c<='z') || (c >= 'A' && c <= 'z')))
+//    	  throw new Exception ("invalid method name");
+//      
+//      for (int i = 1; i < methodName.length(); i++) {
+//    	  if (!((c >= 'a' && c<='z') || (c >= 'A' && c <= 'z')) || (c == '_'))
+//    		  throw new Exception ("invalid method name");
+//      }
+    	  pgm += methodName + ":\n";
 
       // open parenthesis
       if (!f.check ('(')) {
@@ -150,7 +163,7 @@ public class BaliCompiler
     }
     catch(Exception e){
       if (methodName.equals("")) {
-        System.out.println("Expecting method name");
+        System.out.println("In line " + f.lineNo() + ": " + e.getMessage() + " Expecting method name");
         System.exit(-1);
       }
       else {
@@ -331,7 +344,6 @@ public class BaliCompiler
       pgm += "STOREOFF " + offset + "\n";
       if (!f.check(';'))
         throw new Exception("Expecting ';' at the end of the assign statement");
-
       return pgm;
     }
 
@@ -390,7 +402,7 @@ public class BaliCompiler
         String pgm = "";
         char op;
         if (!f.check('('))
-          throw new Exception("Expecting '('");
+          throw new Exception("Expecting '(' after the operator");
         if (f.test('-')) {
           f.check('-');
           pgm += "PUSHIMM 0\n";
