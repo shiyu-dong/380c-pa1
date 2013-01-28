@@ -267,7 +267,9 @@ public class BaliCompiler
           throw new Exception("Expect ')' after 'if'");
         pgm += "JUMPC " +"Taken" + current_label_count + "\n"; // branch taken
 
+        System.out.println("IIIIIIFFFFFFFF");
         String B1 = getStatements(f, symt, methodName, current_while_label);
+        System.out.println("IIIIIIFFFFFFFF");
 
         if (!f.check("else"))
           throw new Exception("Expect 'else after 'if'");
