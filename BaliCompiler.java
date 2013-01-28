@@ -420,6 +420,7 @@ public class BaliCompiler
 
         // E -> ( E )
         if (f.test(')')) {
+          f.check(')');
           return pgm;
         }
 
