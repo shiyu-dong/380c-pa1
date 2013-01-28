@@ -176,7 +176,6 @@ public class BaliCompiler
 
   static int  getFormals(SamTokenizer f, Hashtable<String, Integer> symt) throws Exception {
     String ID;
-    String code="";
     int count = 0;
     while(!f.test(')')) {
       if (!f.check("int")) {
@@ -213,7 +212,6 @@ public class BaliCompiler
   static String getDeclaration(SamTokenizer f, Hashtable<String, Integer> symt) throws Exception{
     String pgm = "";
     String ID;
-    Character c;
     int offset;
 
     ID = f.getWord();
