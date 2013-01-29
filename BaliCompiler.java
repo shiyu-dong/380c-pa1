@@ -104,11 +104,12 @@ public class BaliCompiler
 
       // method name
       methodName = f.getWord();
-      if ((methodName.equals("int")) || (methodName.equals("if")) 
-      || (methodName.equals("else")) || (methodName.equals("while")) 
-      || (methodName.equals("break")))
+      if ((methodName.equals("int")) || (methodName.equals("if"))
+      || (methodName.equals("else")) || (methodName.equals("while"))
+      || (methodName.equals("true")) || (methodName.equals("false"))
+      || (methodName.equals("break")) || (methodName.equals("return")))
     	  throw new Exception ("method name is keyword.");
-      
+
 //      char c = methodName.charAt(0);
 //      if (!((c >= 'a' && c<='z') || (c >= 'A' && c <= 'z')))
 //    	  throw new Exception ("invalid method name");
@@ -279,7 +280,7 @@ public class BaliCompiler
       String B1 = getStatements(f, symt, methodName, current_while_label);
 
       if (!f.check("else"))
-        throw new Exception("Expect 'else after 'if'");
+        throw new Exception("Expect 'else' after 'if'");
 
       String B2 = getStatements(f, symt, methodName, current_while_label);
 
