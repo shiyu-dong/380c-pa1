@@ -21,7 +21,7 @@ public class BaliCompiler
 
     try {
       // open output file
-      FileOutputStream ofile = new FileOutputStream(args[1], true);
+      FileOutputStream ofile = new FileOutputStream(args[1], false);
 
       // run the compiler which generates SaM code stream
       String code = compiler(args[0]);
@@ -314,8 +314,6 @@ public class BaliCompiler
              + "JUMP WL1_" + current_label_count + "\n"
              + "WL2_" + current_label_count + ":\n";
 
-      System.out.println("while end");
-
       return pgm;
     }
 
@@ -327,7 +325,6 @@ public class BaliCompiler
       if (current_while_label == -1) {
         throw new Exception("'break' not used inside a loop");
       }
-      System.out.println("break");
       pgm += "JUMP WL2_" + current_while_label + "\n";
 
       return pgm;
