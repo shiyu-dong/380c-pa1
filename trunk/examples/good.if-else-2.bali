@@ -6,7 +6,7 @@ int method1(int a)
     else if ( (a > 3) )
         b = 10;
     else
-        b=-15;
+        b=(-15);
     return b;
 
 }

@@ -144,7 +144,7 @@ public class BaliCompiler
       pgm += tmp;
 
       while(!f.test('}'))
-        pgm += getStatements(f, symt, methodName, -1);
+        pgm += getStatements(f, symt, methodName, -1, method_list);
       f.check('}');
 
       offset = symt.get("rv") - symt.get("FBR");
@@ -234,7 +234,7 @@ public class BaliCompiler
     return pgm;
   }
 
-  static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt, String methodName, int current_while_label) throws Exception{
+  static String getStatements(SamTokenizer f, Hashtable<String, Integer> symt, String methodName, int current_while_label, Hashtable<String, Integer> method_list) throws Exception{
     String pgm = "";
     String tmp;
 
@@ -248,7 +248,7 @@ public class BaliCompiler
     if (f.test('{')) {
       f.check('{');
       while(!f.test('}'))
-        pgm += getStatements(f, symt, methodName, current_while_label);
+        pgm += getStatements(f, symt, methodName, current_while_label, method_list);
       if (!f.check('}')) {
         throw new Exception("Expect '}' at the end of the statement block");
       }
@@ -262,7 +262,9 @@ public class BaliCompiler
       pgm += getExp(f, symt);
       if (!f.check(';'))
         throw new Exception("Expecting ';' at the end of the return statement");
-      return pgm + "JUMP " + methodName + "End\n";
+      return pgm + "POPFBR\n" +
+                   "ADDSP -" + method_list.get(methodName) + "\n" +
+                   "JUMP " + methodName + "End\n";
     }
 
     // if e then B1 else B2
@@ -277,12 +279,12 @@ public class BaliCompiler
         throw new Exception("Expect ')' after 'if'");
       pgm += "JUMPC " +"Taken" + current_label_count + "\n"; // branch taken
 
-      String B1 = getStatements(f, symt, methodName, current_while_label);
+      String B1 = getStatements(f, symt, methodName, current_while_label, method_list);
 
       if (!f.check("else"))
         throw new Exception("Expect 'else' after 'if'");
 
-      String B2 = getStatements(f, symt, methodName, current_while_label);
+      String B2 = getStatements(f, symt, methodName, current_while_label, method_list);
 
       pgm += B2;
       pgm += "JUMP BranchEnd" + current_label_count + "\n";
@@ -304,7 +306,7 @@ public class BaliCompiler
       if (!f.check(')'))
         throw new Exception("Expect ')' after 'while'");
 
-      String B = getStatements(f, symt, methodName, current_label_count);
+      String B = getStatements(f, symt, methodName, current_label_count, method_list);
 
       pgm += "WL1_" + current_label_count + ":\n";
       pgm += E;
@@ -365,7 +367,12 @@ public class BaliCompiler
         if (tmp.equals("false")) { // E -> LITERAL -> false
           return "PUSHIMM 0\n";
         }
-       if (method_list.containsKey(tmp)) { // E -> METHOD ( ACTUALS )
+        if (symt.containsKey(tmp)) { // E -> LOCATION -> ID
+          int offset = symt.get(tmp) - symt.get("FBR");
+          return "PUSHOFF " + offset + "\n";
+        }
+        //if (method_list.containsKey(tmp)) { 
+        else {// E -> METHOD ( ACTUALS )
           String pgm = "PUSHIMM 0\n";
           if (!f.check('(')) {
             throw new Exception("expecting '(' in functions actuals");
@@ -380,17 +387,13 @@ public class BaliCompiler
           }
           return (pgm +
                   "LINK\n" +
-                  "JSR " + tmp + "\n" +
+                  "JSR " + tmp + "\n"); /*+
                   "POPFBR\n" +
-                  "ADDSP -" + method_list.get(tmp) + "\n");
+                  "ADDSP -" + method_list.get(tmp) + "\n");*/
         }
-        if (symt.containsKey(tmp)) { // E -> LOCATION -> ID
-          int offset = symt.get(tmp) - symt.get("FBR");
-          return "PUSHOFF " + offset + "\n";
-        }
-        else {
+        /*else {
           throw new Exception("symbol not defined");
-        }
+        }*/
       }
 
       case OPERATOR:
