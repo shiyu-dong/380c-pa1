@@ -1,0 +1,24 @@
+int main() {
+  return method3(method1(1, method3(2)));
+}
+
+int method4(int c, int z) {
+  return (c+z);
+}
+
+int method3(int a) {
+  return a;
+}
+
+int method2(int a, int b, int c) {
+  return ( ( method4(a,b) + method5(c) ) + ( 4 + ((3*3) - 4) ) );
+}
+
+int method5(int q) {
+  return q;
+}
+
+int method1(int a, int b) {
+  return method2(a, b, 3);
+}
+

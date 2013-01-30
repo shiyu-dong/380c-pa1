@@ -3,5 +3,5 @@ compile: clean BaliCompiler.java Sam-2.6.2.jar
 run: compile
 	./run.sh
 clean:
-	rm -rf *.class *.out *.log *.sam
+	rm -rf *.class *.out *.log *.sam ./examples/*.sam ./tests/*.sam
 
