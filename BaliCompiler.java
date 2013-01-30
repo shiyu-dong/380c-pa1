@@ -150,14 +150,8 @@ public class BaliCompiler
       offset = symt.get("rv") - symt.get("FBR");
       pgm += methodName + "End:\n"
               + "STOREOFF " + offset + "\n"
-              + "ADDSP -" + local_count + "\n";
-      if (input_num > 0) {
-        pgm +=   "PUSHOFF 0\n" // load FBR
-               + "STOREOFF -" + input_num + "\n" // back up FBR
-               + "STOREOFF -" + (input_num-1) + "\n" // back up PC
-               + "ADDSP -" + (input_num-1) + "\n"; // get rid of function input on the stack
-      }
-      pgm += "JUMPIND" + "\n";
+              + "ADDSP -" + local_count + "\n"
+              + "JUMPIND" + "\n";
 
 //      if (!f.check ('}')) {
 //        throw new Exception("Expect '}' in method decleartion");
@@ -378,6 +372,7 @@ public class BaliCompiler
         //if (method_list.containsKey(tmp)) { 
         else {// E -> METHOD ( ACTUALS )
           String pgm = "PUSHIMM 0\n";
+          int arg_count = 0;
           if (!f.check('(')) {
             throw new Exception("expecting '(' in functions actuals");
           }
@@ -385,6 +380,7 @@ public class BaliCompiler
             pgm += getExp(f, symt);
             if (f.test(','))
               f.check(',');
+            arg_count++;
           }
           if (!f.check(')')) {
             throw new Exception("expecting ')' in functions actuals");
@@ -392,8 +388,8 @@ public class BaliCompiler
           return (pgm +
                   "LINK\n" +
                   "JSR " + tmp + "\n" +
-                  "POPFBR\n"); /* +
-                  "ADDSP -" + method_list.get(tmp) + "\n");*/
+                  "POPFBR\n" +
+                  "ADDSP -" + arg_count + "\n");
         }
         /*else {
           throw new Exception("symbol not defined");
