@@ -150,8 +150,14 @@ public class BaliCompiler
       offset = symt.get("rv") - symt.get("FBR");
       pgm += methodName + "End:\n"
               + "STOREOFF " + offset + "\n"
-              + "ADDSP -" + local_count + "\n"
-              + "JUMPIND" + "\n";
+              + "ADDSP -" + local_count + "\n";
+      if (input_num > 0) {
+        pgm +=   "PUSHOFF 0\n" // load FBR
+               + "STOREOFF -" + input_num + "\n" // back up FBR
+               + "STOREOFF -" + (input_num-1) + "\n" // back up PC
+               + "ADDSP -" + (input_num-1) + "\n"; // get rid of function input on the stack
+      }
+      pgm += "JUMPIND" + "\n";
 
 //      if (!f.check ('}')) {
 //        throw new Exception("Expect '}' in method decleartion");
@@ -262,9 +268,7 @@ public class BaliCompiler
       pgm += getExp(f, symt);
       if (!f.check(';'))
         throw new Exception("Expecting ';' at the end of the return statement");
-      return pgm + "POPFBR\n" +
-                   "ADDSP -" + method_list.get(methodName) + "\n" +
-                   "JUMP " + methodName + "End\n";
+      return pgm + "JUMP " + methodName + "End\n";
     }
 
     // if e then B1 else B2
@@ -387,8 +391,8 @@ public class BaliCompiler
           }
           return (pgm +
                   "LINK\n" +
-                  "JSR " + tmp + "\n"); /*+
-                  "POPFBR\n" +
+                  "JSR " + tmp + "\n" +
+                  "POPFBR\n"); /* +
                   "ADDSP -" + method_list.get(tmp) + "\n");*/
         }
         /*else {
