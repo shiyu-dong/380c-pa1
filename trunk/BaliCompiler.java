@@ -127,6 +127,9 @@ public class BaliCompiler
       // formals
       Integer input_num = new Integer(1);
       input_num = getFormals(f, symt);
+      if (method_list.containsKey(methodName)) {
+        throw new Exception("Redifinition of method " + methodName);
+      }
       method_list.put(methodName, input_num);
       // open parenthesis
       if (!f.check (')')) {
